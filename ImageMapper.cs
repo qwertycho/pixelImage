@@ -89,7 +89,7 @@ class ImageMapper
         px.Red = avgRed;
         px.Blue = avgBlue;
         px.Green = avgGreen;
-        px.Img = ImageScaler(img);
+        px.Img = img;
         px.name = name;
 
         return px;
