@@ -22,6 +22,8 @@ class ImageMapper
         int maxOffset= 25;
         int incrementor = 1;
         bool foundMatch = false;
+        int bestOffset = 765; ///255 x 3 (rgb)
+        Pixel bestMatch = pixels[0];
         
         while(!foundMatch)
         {
@@ -30,12 +32,26 @@ class ImageMapper
                 if(IsMatch(px.Red, toMatch.Red, maxOffset) && IsMatch(px.Green, toMatch.Green, maxOffset) && IsMatch(px.Blue, toMatch.Blue, maxOffset))
                 {
                     foundMatch = true;
-                    return px; // eerste match terugsturen
+                    int tmpOffset = GetError(px.Red, toMatch.Red) + GetError(px.Green, toMatch.Green) + GetError(px.Blue, toMatch.Blue);
+
+                    if(tmpOffset < bestOffset)
+                    {
+                        bestOffset = tmpOffset;
+                        bestMatch = px;
+                    }
+                    
+                    //return px; // eerste match terugsturen
                 }
             }
             maxOffset += incrementor;
         }
-        throw new Exception("Compiler shutup");
+        return bestMatch;
+    }
+
+    private int GetError(int val1, int val2)
+    {
+        int offset = val1 - val2;
+        return offset;
     }
 
     private bool IsMatch(int val1, int val2, int max)

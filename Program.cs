@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Drawing;
 using System.Net;
+using System.Diagnostics;
 
 Logger.SetLogLevel(Logger.LogLevel.Debug);
 InputParser inputParser = new InputParser(args);
@@ -26,8 +27,12 @@ if(inputParser.options.Flags[Operations.Map])
 
 if(inputParser.options.Flags[Operations.Convert])
 {
+    Console.WriteLine("Starting converting operation");
     foreach(var file in Directory.GetFiles("input"))
     {
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
         int pixelSize = inputParser.options.PixelSize;
 
         Bitmap rawImg = new Bitmap(file);
@@ -38,9 +43,9 @@ if(inputParser.options.Flags[Operations.Convert])
         Logger.Debug("new height: " + scaledHeight * pixelSize);
         Logger.Debug("new width: " + scaledWidth * pixelSize);
 
-        if(scaledWidth*pixelSize > 10000 || scaledHeight*pixelSize > 10000)
+        if(scaledWidth*pixelSize > 15000 || scaledHeight*pixelSize > 15000)
         {
-            throw new Exception(scaledWidth*pixelSize + "px X " + scaledHeight*pixelSize + "px too large. Max 10000 X 10000" );
+            throw new Exception(scaledWidth*pixelSize + "px X " + scaledHeight*pixelSize + "px too large. Max 15000 X 15000" );
         }
 
         Bitmap scaledImage = imageMapper.ImageScaler(rawImg, width: scaledWidth , height: scaledHeight);
@@ -76,5 +81,7 @@ if(inputParser.options.Flags[Operations.Convert])
         Logger.Debug("Saving img...");
         newImg.Save("output/final.jpg");
         newImg.Dispose();
+        stopwatch.Stop();
+        Logger.Debug("Converted img in: " + stopwatch.ElapsedMilliseconds + "MS");
     }
 }
