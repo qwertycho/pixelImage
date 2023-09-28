@@ -46,13 +46,13 @@ class ImageMapper
         return true;
     }
 
-    public Pixel ImageParser(Bitmap img, string name)
+    public Pixel ImageParser(Bitmap img, string name, Settings options)
     {
         int TRed = 0;
         int TGreen = 0;
         int TBlue = 0;
 
-        img = ImageScaler(img);
+        img = ImageScaler(img, width: options.PixelSize, height: options.PixelSize);
 
         for(int x = 0 ; x < img.Width; x++)
         {

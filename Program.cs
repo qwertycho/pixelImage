@@ -1,39 +1,51 @@
 ﻿using System.Reflection;
 using System.Drawing;
+using System.Net;
 
+Logger.SetLogLevel(Logger.LogLevel.Debug);
 InputParser inputParser = new InputParser(args);
 ImageMapper imageMapper = new ImageMapper();
 
-if(inputParser.FeatureFlags[InputParser.Operations.Map])
+if(inputParser.options.Flags[Operations.Map])
 {
-    Console.WriteLine("Starting mapping operation");
     foreach(var file in Directory.GetFiles("pixels"))
     {
         try{
             //windows only
-            Console.WriteLine(file);
+            Logger.Debug(file);
             Bitmap img = new Bitmap(file);
-            Pixel px = imageMapper.ImageParser(img, file);
+            Pixel px = imageMapper.ImageParser(img, file, inputParser.options);
             img.Dispose();
             imageMapper.pixels.Add(px);
         } catch(Exception e)
         {
-            Console.WriteLine(e);
+            Logger.ERROR(e.Message);
         }
     }
 }
 
-if(inputParser.FeatureFlags[InputParser.Operations.Convert])
+if(inputParser.options.Flags[Operations.Convert])
 {
-    Console.WriteLine("Starting converting operation");
     foreach(var file in Directory.GetFiles("input"))
     {
-        Bitmap rawImg = new Bitmap(file);
-        int widthImages = rawImg.Width/50;
-        int heightImages = rawImg.Height/50;
+        int pixelSize = inputParser.options.PixelSize;
 
-        Bitmap scaledImage = imageMapper.ImageScaler(rawImg, width: widthImages , height: heightImages);
-        Bitmap newImg = new Bitmap(width: widthImages*50, height: heightImages*50);
+        Bitmap rawImg = new Bitmap(file);
+        int scaledWidth = (int)(rawImg.Width*inputParser.options.ImageScaling)/pixelSize;
+        int scaledHeight = (int)(rawImg.Height*inputParser.options.ImageScaling)/pixelSize;
+
+        Logger.Debug("pixel: " + pixelSize);
+        Logger.Debug("new height: " + scaledHeight * pixelSize);
+        Logger.Debug("new width: " + scaledWidth * pixelSize);
+
+        if(scaledWidth*pixelSize > 10000 || scaledHeight*pixelSize > 10000)
+        {
+            throw new Exception(scaledWidth*pixelSize + "px X " + scaledHeight*pixelSize + "px too large. Max 10000 X 10000" );
+        }
+
+        Bitmap scaledImage = imageMapper.ImageScaler(rawImg, width: scaledWidth , height: scaledHeight);
+
+        Bitmap newImg = new Bitmap(width: scaledWidth*pixelSize, height: scaledHeight*pixelSize);
         rawImg.Dispose();
 
         for(int x = 0; x < scaledImage.Width; x++)
@@ -52,8 +64,8 @@ if(inputParser.FeatureFlags[InputParser.Operations.Convert])
                 using (Graphics graphics = Graphics.FromImage(newImg))
                 {
                     // Draw the overlay image onto the background at the specified position
-                    int xO = x*50;
-                    int yO = y*50;
+                    int xO = x*pixelSize;
+                    int yO = y*pixelSize;
                     if(x == 0) {xO = x;}
                     if(y == 0) {yO = y;}
                     
@@ -61,7 +73,8 @@ if(inputParser.FeatureFlags[InputParser.Operations.Convert])
                 }
             }
         }
+        Logger.Debug("Saving img...");
         newImg.Save("output/final.jpg");
-
+        newImg.Dispose();
     }
 }

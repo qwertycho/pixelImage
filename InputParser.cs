@@ -1,6 +1,7 @@
 class InputParser
 {
-    public readonly Dictionary<Operations, bool> FeatureFlags;
+    public Dictionary<Operations, bool> FeatureFlags;
+    public Settings options;
 
     public InputParser(string[] args)
     {
@@ -9,25 +10,85 @@ class InputParser
             {Operations.Convert, false},
             {Operations.Map, false}
         };
-        ParseInput(args);
+        options = ParseInput(args);
+        Logger.Debug("Scaling: " + options.Flags[Operations.Scaling]);
+        Logger.Debug("Map: " + options.Flags[Operations.Map]);
+        Logger.Debug("PixelSize: "+ options.PixelSize);
+        Logger.Debug("ImageScaling: "+ options.ImageScaling);
     }
 
-    private void ParseInput(string[] args)
+    private Settings ParseInput(string[] args)
     {
-        foreach(string input in args)
+        Operations currentToken = Operations.None;
+        Settings settings = new();
+
+        foreach(string token in args)
         {
-            if(!input.StartsWith("--")) {throw new Exception("Unkown input!");}
-
-            string flagName = input.Substring(2);
-            if (!Enum.TryParse(flagName, out Operations flag)) {throw new Exception("Unkown flag!");}
-            else {FeatureFlags[flag] = true;}
+            if(token.StartsWith("--"))
+            {
+                string opName = token[2..];
+                if (!Enum.TryParse(opName, out Operations flag)) 
+                {
+                    throw new Exception("Unknown token!");
+                }
+                else 
+                {
+                    currentToken = flag;
+                }
+            } else if(currentToken != Operations.None)
+            {
+                switch (currentToken)
+                {
+                    
+                    case Operations.PixelSize:
+                        int.TryParse(token, out int size);
+                        if(size > 10) 
+                        {
+                            settings.PixelSize = size;
+                        }
+                        break;
+                    case Operations.Scaling:
+                        float.TryParse(token, out float factor);
+                        if(factor > 0.1)
+                        {
+                            settings.ImageScaling = factor;
+                        }
+                        break;
+                }
+            } else{
+                throw new Exception("Token error: " + currentToken);
+            }
+            settings.Flags[currentToken] = true;
         }
+        return settings;
     }
-
-
-    public enum Operations 
-    {
-        Convert,
-        Map,
 }
+
+public enum Operations 
+{
+    None = 0,
+    Convert,
+    Map,
+    Scaling,
+    PixelSize,
+}
+public class Settings
+{
+    public int PixelSize {get; set;}
+    public float ImageScaling {get; set;}
+    public Dictionary<Operations, bool> Flags;
+
+    public Settings()
+    {
+        Flags = new Dictionary<Operations, bool>
+        {
+            {Operations.Convert, false},
+            {Operations.Map, false},
+            {Operations.Scaling, false},
+            {Operations.PixelSize, false}
+        };
+
+        PixelSize = 50;
+        ImageScaling = 1f;
+    }
 }
