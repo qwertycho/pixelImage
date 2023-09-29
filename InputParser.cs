@@ -71,6 +71,7 @@ public enum Operations
     Map,
     Scaling,
     PixelSize,
+    Parallel
 }
 public class Settings
 {
@@ -85,7 +86,8 @@ public class Settings
             {Operations.Convert, false},
             {Operations.Map, false},
             {Operations.Scaling, false},
-            {Operations.PixelSize, false}
+            {Operations.PixelSize, false},
+            {Operations.Parallel, false}
         };
 
         PixelSize = 50;

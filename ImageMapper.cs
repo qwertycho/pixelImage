@@ -1,9 +1,13 @@
 using System.Drawing;
-class ImageMapper
+public class ImageMapper
 {
-    public readonly List<Pixel> pixels = new List<Pixel>();
+    public List<Pixel> pixels = new List<Pixel>();
+    public readonly Settings options;
 
-    public ImageMapper() {}
+    public ImageMapper(Settings settings) 
+    {
+        options = settings;
+    }
 
     public Bitmap ImageScaler(Bitmap bitmap, int width=50, int height=50)
     {
@@ -15,6 +19,14 @@ class ImageMapper
             graphics.DrawImage(bitmap, 0, 0, width, height);
         }
         return scaled;
+    }
+
+    public async Task AddPixelFromFile(string file)
+    {
+        Bitmap img = new Bitmap(file);
+        Pixel px = ImageParser(img, file);
+        img.Dispose();
+        pixels.Add(px);
     }
     
     public Pixel GetMatch(Pixel toMatch)
@@ -62,7 +74,7 @@ class ImageMapper
         return true;
     }
 
-    public Pixel ImageParser(Bitmap img, string name, Settings options)
+    public Pixel ImageParser(Bitmap img, string name)
     {
         int TRed = 0;
         int TGreen = 0;
@@ -96,13 +108,4 @@ class ImageMapper
     }
 
 
-}
-
-public struct Pixel
-{
-        public int Red {get; set;}
-        public int Green {get; set;}
-        public int Blue {get; set;}
-        public Bitmap Img {get; set;}
-        public string name {get; set;}
 }
