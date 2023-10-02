@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Drawing;
 using System.Net;
 using System.Diagnostics;
 
@@ -23,7 +22,7 @@ if(inputParser.options.Flags[Operations.Map])
     {
         foreach (var file in Directory.GetFiles("pixels"))
         {
-            Bitmap img = new Bitmap(file);
+            Image img = Image.Load(file); 
             Pixel px = imageMapper.ImageParser(img, file);
             img.Dispose();
             imageMapper.pixels.Add(px);

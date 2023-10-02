@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "A6+Bb+HIJnctJDGeZV0IStv+PhYL5CnFpCe1cuPojL/tkBgcA/YXhXrhUotB+Z7JVtfUKvA8Nfejo6MudWUirg==",
+  "success": true,
+  "projectFilePath": "/home/qwertycho/Desktop/pixelImage/imgPixels.csproj",
+  "expectedPackageFiles": [
+    "/home/qwertycho/.nuget/packages/microsoft.win32.systemevents/7.0.0/microsoft.win32.systemevents.7.0.0.nupkg.sha512",
+    "/home/qwertycho/.nuget/packages/sixlabors.imagesharp/3.0.2/sixlabors.imagesharp.3.0.2.nupkg.sha512",
+    "/home/qwertycho/.nuget/packages/system.drawing.common/7.0.0/system.drawing.common.7.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

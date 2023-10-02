@@ -1,4 +1,6 @@
-using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System.Diagnostics;
 public static class Converter
 {
@@ -12,7 +14,7 @@ public static class Converter
 
             int pixelSize = options.PixelSize;
 
-            Bitmap rawImg = new Bitmap(file);
+            Image rawImg = Image.Load(file);
             int scaledWidth = (int)(rawImg.Width * options.ImageScaling) / pixelSize;
             int scaledHeight = (int)(rawImg.Height * options.ImageScaling) / pixelSize;
 
@@ -25,10 +27,9 @@ public static class Converter
                 throw new Exception(scaledWidth * pixelSize + "px X " + scaledHeight * pixelSize + "px too large. Max 15000 X 15000");
             }
 
-            Bitmap scaledImage = imageMapper.ImageScaler(rawImg, width: scaledWidth, height: scaledHeight);
+            Image<Rgba32> scaledImage = imageMapper.ImageScaler(rawImg, width: scaledWidth, height: scaledHeight);
 
-            Bitmap newImg = new Bitmap(width: scaledWidth * pixelSize, height: scaledHeight * pixelSize);
-            rawImg.Dispose();
+            Image<Rgba32> newImg = new Image<Rgba32>(Configuration.Default, scaledWidth * pixelSize, scaledHeight * pixelSize);
 
             ProgressBar pb = new(scaledImage.Width);
 
@@ -36,25 +37,24 @@ public static class Converter
             {
                 for (int y = 0; y < scaledImage.Height; y++)
                 {
+                    Rgba32 pxl = scaledImage[x, y];
                     Pixel toMatch = new()
                     {
-                        Red = scaledImage.GetPixel(x, y).R,
-                        Green = scaledImage.GetPixel(x, y).G,
-                        Blue = scaledImage.GetPixel(x, y).B
+                        Red = pxl.R,
+                        Green = pxl.G,
+                        Blue = pxl.B
                     };
 
                     Pixel px = imageMapper.GetMatch(toMatch);
 
-                    using (Graphics graphics = Graphics.FromImage(newImg))
-                    {
                         // Draw the overlay image onto the background at the specified position
                         int xO = x * pixelSize;
                         int yO = y * pixelSize;
                         if (x == 0) { xO = x; }
                         if (y == 0) { yO = y; }
 
-                        graphics.DrawImage(px.Img, xO, yO);
-                    }
+                        newImg.Mutate(x => 
+                            x.DrawImage(px.Img, new Point(xO, yO), 1f));
                 }
                 pb.Tick();
             }
