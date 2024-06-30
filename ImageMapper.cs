@@ -1,4 +1,5 @@
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 public class ImageMapper
@@ -6,12 +7,12 @@ public class ImageMapper
     public List<Pixel> pixels = new List<Pixel>();
     public readonly Settings options;
 
-    public ImageMapper(Settings settings) 
+    public ImageMapper(Settings settings)
     {
         options = settings;
     }
 
-    public Image<Rgba32> ImageScaler(Image image, int width=50, int height=50)
+    public Image<Rgba32> ImageScaler(Image image, int width = 50, int height = 50)
     {
         image.Mutate(x => x.Resize(width, height));
         return image.CloneAs<Rgba32>();
@@ -19,34 +20,34 @@ public class ImageMapper
 
     public async Task AddPixelFromFile(string file)
     {
-        Image img =  Image.Load(file);
+        Image img = Image.Load(file);
         Pixel px = ImageParser(img, file);
         pixels.Add(px);
     }
-    
+
     public Pixel GetMatch(Pixel toMatch)
     {
-        int maxOffset= 25;
+        int maxOffset = 25;
         int incrementor = 1;
         bool foundMatch = false;
         int bestOffset = 765; ///255 x 3 (rgb)
         Pixel bestMatch = pixels[0];
-        
-        while(!foundMatch)
+
+        while (!foundMatch)
         {
-            foreach(Pixel px in pixels)
+            foreach (Pixel px in pixels)
             {
-                if(IsMatch(px.Red, toMatch.Red, maxOffset) && IsMatch(px.Green, toMatch.Green, maxOffset) && IsMatch(px.Blue, toMatch.Blue, maxOffset))
+                if (IsMatch(px.Red, toMatch.Red, maxOffset) && IsMatch(px.Green, toMatch.Green, maxOffset) && IsMatch(px.Blue, toMatch.Blue, maxOffset))
                 {
                     foundMatch = true;
                     int tmpOffset = GetError(px.Red, toMatch.Red) + GetError(px.Green, toMatch.Green) + GetError(px.Blue, toMatch.Blue);
 
-                    if(tmpOffset < bestOffset)
+                    if (tmpOffset < bestOffset)
                     {
                         bestOffset = tmpOffset;
                         bestMatch = px;
                     }
-                    
+
                     //return px; // eerste match terugsturen
                 }
             }
@@ -65,7 +66,7 @@ public class ImageMapper
     {
         int offset = val1 - val2;
         offset = Math.Abs(offset);
-        if(offset >= max){ return false;}
+        if (offset >= max) { return false; }
         return true;
     }
 
@@ -78,9 +79,9 @@ public class ImageMapper
         img = ImageScaler(img, width: options.PixelSize, height: options.PixelSize);
         Image<Rgba32> imgRGB = img.CloneAs<Rgba32>();
 
-        for(int x = 0 ; x < img.Width; x++)
+        for (int x = 0; x < img.Width; x++)
         {
-            for(int y = 0; y < img.Height; y++)
+            for (int y = 0; y < img.Height; y++)
             {
                 Rgba32 pxl = imgRGB[x, y];
                 TRed += pxl.R;
@@ -89,9 +90,9 @@ public class ImageMapper
             }
         }
         int numPixels = img.Height * img.Width;
-        int avgRed = TRed/numPixels;
-        int avgGreen = TGreen/numPixels;
-        int avgBlue = TBlue/numPixels;
+        int avgRed = TRed / numPixels;
+        int avgGreen = TGreen / numPixels;
+        int avgBlue = TBlue / numPixels;
 
         Pixel px = new Pixel();
         px.Red = avgRed;
@@ -102,6 +103,4 @@ public class ImageMapper
 
         return px;
     }
-
-
 }

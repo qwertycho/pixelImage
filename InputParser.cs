@@ -1,61 +1,67 @@
 class InputParser
 {
-    public Dictionary<Operations, bool> FeatureFlags;
+    public Dictionary<Flags, bool> FeatureFlags;
     public Settings options;
 
     public InputParser(string[] args)
     {
-        FeatureFlags = new Dictionary<Operations, bool>
+        FeatureFlags = new Dictionary<Flags, bool>
         {
-            {Operations.Convert, false},
-            {Operations.Map, false}
+            {Flags.Convert, false},
+            {Flags.Map, false}
         };
         options = ParseInput(args);
-        Logger.Debug("Scaling: " + options.Flags[Operations.Scaling]);
-        Logger.Debug("Map: " + options.Flags[Operations.Map]);
-        Logger.Debug("PixelSize: "+ options.PixelSize);
-        Logger.Debug("ImageScaling: "+ options.ImageScaling);
+        Logger.Debug("Scaling: " + options.Flags[Flags.Scaling]);
+        Logger.Debug("Map: " + options.Flags[Flags.Map]);
+        Logger.Debug("PixelSize: " + options.PixelSize);
+        Logger.Debug("ImageScaling: " + options.ImageScaling);
     }
 
     private Settings ParseInput(string[] args)
     {
-        Operations currentToken = Operations.None;
+        Flags currentToken = Flags.None;
         Settings settings = new();
 
-        foreach(string token in args)
+        foreach (string token in args)
         {
-            if(token.StartsWith("--"))
+            if (token.StartsWith("--"))
             {
                 string opName = token[2..];
-                if (!Enum.TryParse(opName, out Operations flag)) 
+                if (!Enum.TryParse(opName, out Flags flag))
                 {
-                    throw new Exception("Unknown token!");
+                    throw new Exception($"Unknown token: {token}");
                 }
-                else 
+                else
                 {
                     currentToken = flag;
                 }
-            } else if(currentToken != Operations.None)
+            }
+            else if (currentToken != Flags.None)
             {
                 switch (currentToken)
                 {
-                    
-                    case Operations.PixelSize:
+
+                    case Flags.PixelSize:
                         int.TryParse(token, out int size);
-                        if(size > 10) 
+                        if (size > 10)
                         {
                             settings.PixelSize = size;
                         }
                         break;
-                    case Operations.Scaling:
+                    case Flags.Scaling:
                         float.TryParse(token, out float factor);
-                        if(factor > 0.1)
+                        if (factor > 0.1)
                         {
                             settings.ImageScaling = factor;
                         }
                         break;
+                    case Flags.Filename:
+                        settings.Filename = token;
+                        break;
                 }
-            } else{
+            }
+            else
+            {
                 throw new Exception("Token error: " + currentToken);
             }
             settings.Flags[currentToken] = true;
@@ -64,30 +70,35 @@ class InputParser
     }
 }
 
-public enum Operations 
+public enum Flags
 {
     None = 0,
     Convert,
+    Ascii,
     Map,
     Scaling,
     PixelSize,
-    Parallel
+    Parallel,
+    Invert,
+    Filename,
 }
 public class Settings
 {
-    public int PixelSize {get; set;}
-    public float ImageScaling {get; set;}
-    public Dictionary<Operations, bool> Flags;
+    public int PixelSize { get; set; }
+    public float ImageScaling { get; set; }
+    public string Filename { get; set; }
+    public Dictionary<Flags, bool> Flags;
 
     public Settings()
     {
-        Flags = new Dictionary<Operations, bool>
+        Flags = new Dictionary<Flags, bool>
         {
-            {Operations.Convert, false},
-            {Operations.Map, false},
-            {Operations.Scaling, false},
-            {Operations.PixelSize, false},
-            {Operations.Parallel, false}
+            { global::Flags.Convert, false},
+            { global::Flags.Map, false},
+            { global::Flags.Scaling, false},
+            { global::Flags.PixelSize, false},
+            { global::Flags.Parallel, false},
+            { global::Flags.Invert, false}
         };
 
         PixelSize = 50;
